@@ -21,7 +21,14 @@ import {
   getOnboardingDocuments,
   type OnboardingDocument,
 } from "@/lib/hrOnboarding";
-import { addCoeDocument, addWarningForm } from "@/lib/hrWarningsAndCoe";
+import {
+  addCoeDocument,
+  addWarningForm,
+  getCoeDocuments,
+  getWarningForms,
+  type CoeDocument,
+  type WarningForm,
+} from "@/lib/hrWarningsAndCoe";
 import { getActivityLog, activityActionLabel, type HrActivityLogEntry } from "@/lib/hrActivityLog";
 
 export const Route = createFileRoute("/hr-recruitment")({
@@ -206,6 +213,7 @@ function CandidatesTab() {
               <th className="px-6 py-3">Status</th>
               <th className="px-6 py-3">CV</th>
               <th className="px-6 py-3">Added</th>
+              <th className="px-6 py-3">Added By</th>
               <th className="px-6 py-3" />
             </tr>
           </thead>
@@ -255,6 +263,7 @@ function CandidatesTab() {
                   </div>
                 </td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(c.createdAt).toLocaleDateString()}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.createdByName ?? "—"}</td>
                 <td className="px-6 py-3.5">
                   <button type="button" onClick={() => handleDelete(c)} className="text-[var(--color-steel)] hover:text-red-600">
                     <Trash2 className="h-4 w-4" />
@@ -264,7 +273,7 @@ function CandidatesTab() {
             ))}
             {candidates && candidates.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                <td colSpan={8} className="px-6 py-8 text-center text-[var(--color-steel)]">
                   No candidates yet.
                 </td>
               </tr>
@@ -402,6 +411,7 @@ function OnboardingTab() {
               <th className="px-6 py-3">Category</th>
               <th className="px-6 py-3">File</th>
               <th className="px-6 py-3">Filed</th>
+              <th className="px-6 py-3">Filed By</th>
               <th className="px-6 py-3" />
             </tr>
           </thead>
@@ -415,6 +425,7 @@ function OnboardingTab() {
                   </button>
                 </td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(d.createdAt).toLocaleDateString()}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{d.uploadedByName ?? "—"}</td>
                 <td className="px-6 py-3.5">
                   <button type="button" onClick={() => handleDelete(d)} className="text-[var(--color-steel)] hover:text-red-600">
                     <Trash2 className="h-4 w-4" />
@@ -424,7 +435,7 @@ function OnboardingTab() {
             ))}
             {docs && docs.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                <td colSpan={5} className="px-6 py-8 text-center text-[var(--color-steel)]">
                   No documents filed yet.
                 </td>
               </tr>
@@ -439,12 +450,15 @@ function OnboardingTab() {
 // ── Warnings & Certificates of Employment ───────────────────────────────
 
 function WarningsCoeTab() {
+  const { profile } = useAuth();
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [selected, setSelected] = useState("");
+  const [warnings, setWarnings] = useState<WarningForm[] | null>(null);
+  const [coeDocs, setCoeDocs] = useState<CoeDocument[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<
-    | { kind: "warning"; employeeName: string; reason: string; description: string; issuedAt: string }
-    | { kind: "coe"; employeeName: string; jobTitle: string; startDate: string; purpose: string }
+    | { kind: "warning"; employeeName: string; reason: string; description: string; issuedAt: string; preparedBy: string | null }
+    | { kind: "coe"; employeeName: string; jobTitle: string; startDate: string; purpose: string; preparedBy: string | null }
     | null
   >(null);
 
@@ -454,6 +468,16 @@ function WarningsCoeTab() {
       if (opts.length > 0) setSelected(opts[0].id);
     });
   }, []);
+
+  async function reloadHistory(profileId: string) {
+    const [w, c] = await Promise.all([getWarningForms(profileId), getCoeDocuments(profileId)]);
+    setWarnings(w);
+    setCoeDocs(c);
+  }
+
+  useEffect(() => {
+    if (selected) reloadHistory(selected);
+  }, [selected]);
 
   const selectedEmployee = employees.find((e) => e.id === selected);
 
@@ -467,7 +491,15 @@ function WarningsCoeTab() {
     setError(null);
     try {
       await addWarningForm(selectedEmployee.id, selectedEmployee.full_name, reason, description, issuedAt);
-      setPreview({ kind: "warning", employeeName: selectedEmployee.full_name, reason, description, issuedAt });
+      setPreview({
+        kind: "warning",
+        employeeName: selectedEmployee.full_name,
+        reason,
+        description,
+        issuedAt,
+        preparedBy: profile?.full_name ?? null,
+      });
+      await reloadHistory(selectedEmployee.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to issue warning form.");
     }
@@ -483,7 +515,15 @@ function WarningsCoeTab() {
     setError(null);
     try {
       await addCoeDocument(selectedEmployee.id, selectedEmployee.full_name, jobTitle, startDate, purpose);
-      setPreview({ kind: "coe", employeeName: selectedEmployee.full_name, jobTitle, startDate, purpose });
+      setPreview({
+        kind: "coe",
+        employeeName: selectedEmployee.full_name,
+        jobTitle,
+        startDate,
+        purpose,
+        preparedBy: profile?.full_name ?? null,
+      });
+      await reloadHistory(selectedEmployee.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate certificate.");
     }
@@ -574,6 +614,66 @@ function WarningsCoeTab() {
 
       {error && <p className="mb-6 text-sm font-semibold text-red-600 print:hidden">{error}</p>}
 
+      <div className="mb-6 grid gap-6 lg:grid-cols-2 print:hidden">
+        <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+              <tr>
+                <th className="px-6 py-3">Warning History</th>
+                <th className="px-6 py-3">Issued By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {warnings?.map((w) => (
+                <tr key={w.id} className="border-b border-black/5 last:border-0">
+                  <td className="px-6 py-3.5">
+                    <p className="font-semibold text-[#1c2024]">{w.reason}</p>
+                    <p className="text-xs text-[var(--color-steel)]">{new Date(w.issuedAt).toLocaleDateString()}</p>
+                  </td>
+                  <td className="px-6 py-3.5 text-[var(--color-steel)]">{w.issuedByName ?? "—"}</td>
+                </tr>
+              ))}
+              {warnings && warnings.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-6 py-6 text-center text-[var(--color-steel)]">
+                    No warnings issued yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+              <tr>
+                <th className="px-6 py-3">COE History</th>
+                <th className="px-6 py-3">Issued By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coeDocs?.map((c) => (
+                <tr key={c.id} className="border-b border-black/5 last:border-0">
+                  <td className="px-6 py-3.5">
+                    <p className="font-semibold text-[#1c2024]">{c.jobTitle}</p>
+                    <p className="text-xs text-[var(--color-steel)]">{new Date(c.createdAt).toLocaleDateString()}</p>
+                  </td>
+                  <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.issuedByName ?? "—"}</td>
+                </tr>
+              ))}
+              {coeDocs && coeDocs.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-6 py-6 text-center text-[var(--color-steel)]">
+                    No certificates generated yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {preview && (
         <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
           <div className="mb-6 flex justify-end print:hidden">
@@ -611,6 +711,12 @@ function WarningsCoeTab() {
                 <p>Issued this {new Date().toLocaleDateString()}.</p>
               </>
             )}
+            <div className="mt-12 flex justify-end">
+              <div className="text-center">
+                <p className="font-bold">{preview.preparedBy ?? "—"}</p>
+                <p className="border-t border-black/20 pt-1 text-xs text-[var(--color-steel)]">Prepared by</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

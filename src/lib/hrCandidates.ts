@@ -13,10 +13,12 @@ export interface Candidate {
   cvPath: string | null;
   status: CandidateStatus;
   notes: string | null;
+  createdByName: string | null;
   createdAt: string;
 }
 
-const SELECT = "id, full_name, phone, email, position, department, cv_path, status, notes, created_at";
+const SELECT =
+  "id, full_name, phone, email, position, department, cv_path, status, notes, created_at, author:created_by (full_name)";
 
 interface CandidateRow {
   id: string;
@@ -29,6 +31,7 @@ interface CandidateRow {
   status: CandidateStatus;
   notes: string | null;
   created_at: string;
+  author: { full_name: string } | null;
 }
 
 function fromRow(r: CandidateRow): Candidate {
@@ -42,6 +45,7 @@ function fromRow(r: CandidateRow): Candidate {
     cvPath: r.cv_path,
     status: r.status,
     notes: r.notes,
+    createdByName: r.author?.full_name ?? null,
     createdAt: r.created_at,
   };
 }
@@ -62,6 +66,9 @@ export interface AddCandidateInput {
 }
 
 export async function addCandidate(input: AddCandidateInput): Promise<Candidate> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from("hr_candidates")
     .insert({
@@ -71,6 +78,7 @@ export async function addCandidate(input: AddCandidateInput): Promise<Candidate>
       position: input.position?.trim() || null,
       department: input.department?.trim() || null,
       notes: input.notes?.trim() || null,
+      created_by: user?.id ?? null,
     })
     .select(SELECT)
     .single();

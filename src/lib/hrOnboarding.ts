@@ -7,6 +7,7 @@ export interface OnboardingDocument {
   category: string;
   fileName: string;
   storagePath: string;
+  uploadedByName: string | null;
   createdAt: string;
 }
 
@@ -17,6 +18,7 @@ interface OnboardingDocumentRow {
   file_name: string;
   storage_path: string;
   created_at: string;
+  uploader: { full_name: string } | null;
 }
 
 function fromRow(r: OnboardingDocumentRow): OnboardingDocument {
@@ -26,6 +28,7 @@ function fromRow(r: OnboardingDocumentRow): OnboardingDocument {
     category: r.category,
     fileName: r.file_name,
     storagePath: r.storage_path,
+    uploadedByName: r.uploader?.full_name ?? null,
     createdAt: r.created_at,
   };
 }
@@ -33,7 +36,7 @@ function fromRow(r: OnboardingDocumentRow): OnboardingDocument {
 export async function getOnboardingDocuments(profileId: string): Promise<OnboardingDocument[]> {
   const { data, error } = await supabase
     .from("hr_onboarding_documents")
-    .select("id, profile_id, category, file_name, storage_path, created_at")
+    .select("id, profile_id, category, file_name, storage_path, created_at, uploader:uploaded_by (full_name)")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);

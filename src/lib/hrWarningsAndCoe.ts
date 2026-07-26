@@ -7,6 +7,7 @@ export interface WarningForm {
   reason: string;
   description: string;
   issuedAt: string;
+  issuedByName: string | null;
   createdAt: string;
 }
 
@@ -16,6 +17,7 @@ export interface CoeDocument {
   jobTitle: string;
   startDate: string;
   purpose: string | null;
+  issuedByName: string | null;
   createdAt: string;
 }
 
@@ -26,6 +28,7 @@ interface WarningFormRow {
   description: string;
   issued_at: string;
   created_at: string;
+  issuer: { full_name: string } | null;
 }
 
 interface CoeDocumentRow {
@@ -35,12 +38,13 @@ interface CoeDocumentRow {
   start_date: string;
   purpose: string | null;
   created_at: string;
+  issuer: { full_name: string } | null;
 }
 
 export async function getWarningForms(profileId: string): Promise<WarningForm[]> {
   const { data, error } = await supabase
     .from("hr_warning_forms")
-    .select("id, profile_id, reason, description, issued_at, created_at")
+    .select("id, profile_id, reason, description, issued_at, created_at, issuer:issued_by (full_name)")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -50,6 +54,7 @@ export async function getWarningForms(profileId: string): Promise<WarningForm[]>
     reason: r.reason,
     description: r.description,
     issuedAt: r.issued_at,
+    issuedByName: r.issuer?.full_name ?? null,
     createdAt: r.created_at,
   }));
 }
@@ -78,7 +83,7 @@ export async function addWarningForm(
 export async function getCoeDocuments(profileId: string): Promise<CoeDocument[]> {
   const { data, error } = await supabase
     .from("hr_coe_documents")
-    .select("id, profile_id, job_title, start_date, purpose, created_at")
+    .select("id, profile_id, job_title, start_date, purpose, created_at, issuer:issued_by (full_name)")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -88,6 +93,7 @@ export async function getCoeDocuments(profileId: string): Promise<CoeDocument[]>
     jobTitle: r.job_title,
     startDate: r.start_date,
     purpose: r.purpose,
+    issuedByName: r.issuer?.full_name ?? null,
     createdAt: r.created_at,
   }));
 }
