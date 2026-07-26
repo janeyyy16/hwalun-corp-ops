@@ -51,7 +51,7 @@ export function DashboardShell({ children, title, subtitle }: { children: ReactN
     <div className="flex min-h-screen bg-[var(--color-bg)]">
       {/* Sidebar */}
       <aside
-        className={`flex shrink-0 flex-col border-r border-black/5 bg-white transition-[width] duration-200 ${
+        className={`flex shrink-0 flex-col border-r border-black/5 bg-white transition-[width] duration-200 print:hidden ${
           collapsed ? "w-20" : "w-64"
         }`}
       >
@@ -156,7 +156,7 @@ export function DashboardShell({ children, title, subtitle }: { children: ReactN
 
       {/* Main */}
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-black/5 bg-white px-8 py-4">
+        <header className="flex items-center justify-between border-b border-black/5 bg-white px-8 py-4 print:hidden">
           <div>
             <h1 className="text-xl font-bold text-[#1c2024]">{title}</h1>
             {subtitle && <p className="mt-0.5 text-sm text-[var(--color-steel)]">{subtitle}</p>}
