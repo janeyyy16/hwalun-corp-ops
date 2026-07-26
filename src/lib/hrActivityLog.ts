@@ -26,6 +26,19 @@ const ACTIVITY_ACTION_LABELS: Record<string, string> = {
   onboarding_document_deleted: "Removed onboarding document",
   warning_form_issued: "Issued warning form",
   coe_generated: "Generated Certificate of Employment",
+  pto_requested: "Requested PTO",
+  pto_cancelled: "Cancelled PTO request",
+  pto_approved: "Approved PTO request",
+  pto_denied: "Denied PTO request",
+  timecard_correction_requested: "Requested timecard correction",
+  timecard_correction_approved: "Approved timecard correction",
+  timecard_correction_rejected: "Rejected timecard correction",
+  tax_form_requested: "Requested tax form",
+  signable_document_signed: "Signed document",
+  signable_document_confirmed: "Confirmed document",
+  signable_document_cancelled: "Cancelled document",
+  candidate_cv_forwarded: "Forwarded candidate CV",
+  staffing_target_updated: "Updated staff needed target",
 };
 
 export function activityActionLabel(action: string): string {
