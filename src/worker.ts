@@ -43,6 +43,7 @@ async function handleCreateEmployee(request: Request, env: Env): Promise<Respons
 
   const callerClient = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 
   const { data: userData, error: userError } = await callerClient.auth.getUser(token);
@@ -65,7 +66,9 @@ async function handleCreateEmployee(request: Request, env: Env): Promise<Respons
     return json({ error: "Missing required fields" }, 400);
   }
 
-  const adminClient = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const adminClient = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
 
   const { data: created, error: createError } = await adminClient.auth.admin.createUser({
     email,
