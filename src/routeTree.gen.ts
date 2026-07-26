@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountingFinanceRouteImport } from './routes/accounting-finance'
 import { Route as EmployeesRouteImport } from './routes/employees'
+import { Route as HrRecruitmentRouteImport } from './routes/hr-recruitment'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SettingsRouteImport } from './routes/settings'
 
@@ -19,9 +21,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountingFinanceRoute = AccountingFinanceRouteImport.update({
+  id: '/accounting-finance',
+  path: '/accounting-finance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmployeesRoute = EmployeesRouteImport.update({
   id: '/employees',
   path: '/employees',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HrRecruitmentRoute = HrRecruitmentRouteImport.update({
+  id: '/hr-recruitment',
+  path: '/hr-recruitment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -37,34 +49,61 @@ const SettingsRoute = SettingsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accounting-finance': typeof AccountingFinanceRoute
   '/employees': typeof EmployeesRoute
+  '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accounting-finance': typeof AccountingFinanceRoute
   '/employees': typeof EmployeesRoute
+  '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accounting-finance': typeof AccountingFinanceRoute
   '/employees': typeof EmployeesRoute
+  '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/employees' | '/login' | '/settings'
+  fullPaths:
+    | '/'
+    | '/accounting-finance'
+    | '/employees'
+    | '/hr-recruitment'
+    | '/login'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/employees' | '/login' | '/settings'
-  id: '__root__' | '/' | '/employees' | '/login' | '/settings'
+  to:
+    | '/'
+    | '/accounting-finance'
+    | '/employees'
+    | '/hr-recruitment'
+    | '/login'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/accounting-finance'
+    | '/employees'
+    | '/hr-recruitment'
+    | '/login'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountingFinanceRoute: typeof AccountingFinanceRoute
   EmployeesRoute: typeof EmployeesRoute
+  HrRecruitmentRoute: typeof HrRecruitmentRoute
   LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -78,11 +117,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/accounting-finance': {
+      id: '/accounting-finance'
+      path: '/accounting-finance'
+      fullPath: '/accounting-finance'
+      preLoaderRoute: typeof AccountingFinanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/employees': {
       id: '/employees'
       path: '/employees'
       fullPath: '/employees'
       preLoaderRoute: typeof EmployeesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hr-recruitment': {
+      id: '/hr-recruitment'
+      path: '/hr-recruitment'
+      fullPath: '/hr-recruitment'
+      preLoaderRoute: typeof HrRecruitmentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -104,7 +157,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountingFinanceRoute: AccountingFinanceRoute,
   EmployeesRoute: EmployeesRoute,
+  HrRecruitmentRoute: HrRecruitmentRoute,
   LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
 }

@@ -73,7 +73,7 @@ function Employees() {
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       setFormState("error");
-      setFormError(body.error ?? "Failed to add employee.");
+      setFormError(body.error ?? "Failed to add user.");
       return;
     }
 
@@ -85,7 +85,7 @@ function Employees() {
 
   if (!canManageEmployees) {
     return (
-      <DashboardShell title="Employees">
+      <DashboardShell title="User Management">
         <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
           <p className="text-sm text-[var(--color-steel)]">You don't have access to this page.</p>
         </div>
@@ -94,7 +94,7 @@ function Employees() {
   }
 
   return (
-    <DashboardShell title="Employees" subtitle="Manage who has access to the operations portal.">
+    <DashboardShell title="User Management" subtitle="Manage who has access to the operations portal.">
       <div className="mb-6 flex justify-end">
         <button
           type="button"
@@ -102,7 +102,7 @@ function Employees() {
           className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-105"
         >
           {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? "Cancel" : "Add Employee"}
+          {showForm ? "Cancel" : "Add User"}
         </button>
       </div>
 
@@ -110,7 +110,7 @@ function Employees() {
         <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-[var(--color-primary)]" />
-            <h2 className="text-lg font-bold text-[#1c2024]">New Employee</h2>
+            <h2 className="text-lg font-bold text-[#1c2024]">New User</h2>
           </div>
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -151,14 +151,14 @@ function Employees() {
             </div>
             {formError && <p className="text-sm font-semibold text-red-600 sm:col-span-2">{formError}</p>}
             <p className="text-xs text-[var(--color-steel)] sm:col-span-2">
-              New accounts are created with the default password. Relay it to the employee directly.
+              New accounts are created with the default password. Relay it to the user directly.
             </p>
             <button
               type="submit"
               disabled={formState === "submitting"}
               className="rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 sm:col-span-2 sm:w-fit"
             >
-              {formState === "submitting" ? "Creating…" : "Create Employee"}
+              {formState === "submitting" ? "Creating…" : "Create User"}
             </button>
           </form>
         </div>
@@ -192,7 +192,7 @@ function Employees() {
             {employees && employees.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-steel)]">
-                  No employees yet.
+                  No users yet.
                 </td>
               </tr>
             )}
