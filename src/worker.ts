@@ -19,7 +19,12 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/employees" && request.method === "POST") {
-      return handleCreateEmployee(request, env);
+      try {
+        return await handleCreateEmployee(request, env);
+      } catch (err) {
+        console.error("create-employee failed:", err);
+        return json({ error: err instanceof Error ? err.message : "Internal error" }, 500);
+      }
     }
 
     return env.ASSETS.fetch(request);
