@@ -75,27 +75,11 @@ create table hr_candidates (
   department text,
   cv_path text,
   status text not null default 'applied'
-    check (status in ('applied','interviewing','training','on_hold','hired','rejected')),
+    check (status in ('applied','interviewing','hired','rejected')),
   notes text,
   created_by uuid references profiles(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
-);
-
-create table hr_staffing_targets (
-  id uuid primary key default gen_random_uuid(),
-  position text not null,
-  department text not null,
-  staff_needed integer not null default 0,
-  updated_at timestamptz not null default now(),
-  unique (position, department)
-);
-
-create table hr_candidate_cv_forwards (
-  id uuid primary key default gen_random_uuid(),
-  candidate_id uuid not null references hr_candidates(id) on delete cascade,
-  recipient_id uuid references profiles(id),
-  created_at timestamptz not null default now()
 );
 
 create table hr_onboarding_documents (
@@ -138,24 +122,12 @@ create table hr_activity_log (
 );
 
 alter table hr_candidates enable row level security;
-alter table hr_staffing_targets enable row level security;
-alter table hr_candidate_cv_forwards enable row level security;
 alter table hr_onboarding_documents enable row level security;
 alter table hr_warning_forms enable row level security;
 alter table hr_coe_documents enable row level security;
 alter table hr_activity_log enable row level security;
 
 create policy "hr and super admin manage candidates" on hr_candidates
-  for all to authenticated
-  using (current_role_key() in ('super_admin', 'hr'))
-  with check (current_role_key() in ('super_admin', 'hr'));
-
-create policy "hr and super admin manage staffing targets" on hr_staffing_targets
-  for all to authenticated
-  using (current_role_key() in ('super_admin', 'hr'))
-  with check (current_role_key() in ('super_admin', 'hr'));
-
-create policy "hr and super admin manage cv forwards" on hr_candidate_cv_forwards
   for all to authenticated
   using (current_role_key() in ('super_admin', 'hr'))
   with check (current_role_key() in ('super_admin', 'hr'));
@@ -179,94 +151,6 @@ create policy "hr and super admin manage activity log" on hr_activity_log
   for all to authenticated
   using (current_role_key() in ('super_admin', 'hr'))
   with check (current_role_key() in ('super_admin', 'hr'));
-
--- ── Employee self-service: PTO, Timecard, Signable Documents ──
--- Storage: also create a PRIVATE bucket "hr-signed-documents" (generated
--- warning-form / tax-form PDFs), same policy pattern as the two buckets
--- documented above (current_role_key() in ('super_admin','hr') OR the
--- document's own recipient via a signed URL issued server-side).
-
-insert into roles (key, label) values ('employee', 'Employee') on conflict (key) do nothing;
-
-create table pto_requests (
-  id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references profiles(id) on delete cascade,
-  pto_type text not null check (pto_type in ('vacation', 'sick', 'personal', 'unpaid')),
-  start_date date not null,
-  end_date date not null,
-  hours_requested numeric not null,
-  reason text,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'denied', 'cancelled')),
-  reviewed_by uuid references profiles(id),
-  reviewed_at timestamptz,
-  created_at timestamptz not null default now()
-);
-
-create table timecard_entries (
-  id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references profiles(id) on delete cascade,
-  work_date date not null,
-  check_in time,
-  check_out time,
-  meal_start time,
-  meal_end time,
-  notes text,
-  unique (profile_id, work_date)
-);
-
-create table timecard_corrections (
-  id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references profiles(id) on delete cascade,
-  work_date date not null,
-  corrected_check_in time,
-  corrected_check_out time,
-  corrected_meal_start time,
-  corrected_meal_end time,
-  reason text not null,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
-  reviewed_by uuid references profiles(id),
-  created_at timestamptz not null default now()
-);
-
-create table hr_signable_documents (
-  id uuid primary key default gen_random_uuid(),
-  document_type text not null check (document_type in ('warning_form', 'w4', 'w8ben', 'w9')),
-  form_data jsonb not null default '{}',
-  recipient_id uuid not null references profiles(id) on delete cascade,
-  status text not null default 'pending_signature'
-    check (status in ('pending_signature', 'signed', 'confirmed', 'cancelled')),
-  pdf_path text,
-  signature_name text,
-  signed_at timestamptz,
-  confirmed_at timestamptz,
-  created_by uuid references profiles(id),
-  created_at timestamptz not null default now()
-);
-
-alter table pto_requests enable row level security;
-alter table timecard_entries enable row level security;
-alter table timecard_corrections enable row level security;
-alter table hr_signable_documents enable row level security;
-
-create policy "self or hr/super admin manage pto requests" on pto_requests
-  for all to authenticated
-  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
-  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
-
-create policy "self or hr/super admin manage timecard entries" on timecard_entries
-  for all to authenticated
-  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
-  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
-
-create policy "self or hr/super admin manage timecard corrections" on timecard_corrections
-  for all to authenticated
-  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
-  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
-
-create policy "self or hr/super admin manage signable documents" on hr_signable_documents
-  for all to authenticated
-  using (recipient_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
-  with check (recipient_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
 
 -- ── One-time bootstrap: create the first Super Admin ──
 -- 1. Supabase Dashboard → Authentication → Users → Add user

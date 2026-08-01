@@ -2,10 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   Briefcase,
   Building2,
-  CalendarDays,
   ChevronDown,
-  Clock,
-  FileSignature,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -44,19 +41,11 @@ const NAV: NavItem[] = [
   { to: "/settings", label: "Settings", icon: SettingsIcon, roles: null },
 ];
 
-const EMPLOYEE_NAV: NavItem[] = [
-  { to: "/my-pto", label: "My PTO", icon: CalendarDays, roles: null },
-  { to: "/my-timecard", label: "My Timecard", icon: Clock, roles: null },
-  { to: "/my-documents", label: "My Documents", icon: FileSignature, roles: null },
-  { to: "/settings", label: "Settings", icon: SettingsIcon, roles: null },
-];
-
 export function DashboardShell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
   const { profile, signOut } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(true);
-  const navItems = profile?.role.key === "employee" ? EMPLOYEE_NAV : NAV;
 
   return (
     <div className="flex min-h-screen bg-[var(--color-bg)]">
@@ -91,7 +80,7 @@ export function DashboardShell({ children, title, subtitle }: { children: ReactN
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.filter((item) => !item.roles || (profile && item.roles.includes(profile.role.key))).map((item) => {
+          {NAV.filter((item) => !item.roles || (profile && item.roles.includes(profile.role.key))).map((item) => {
             const Icon = item.icon;
             const active = location.pathname === item.to;
             const children = (item.children ?? []).filter(
