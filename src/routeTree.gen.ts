@@ -14,7 +14,10 @@ import { Route as AccountingFinanceRouteImport } from './routes/accounting-finan
 import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as HrRecruitmentRouteImport } from './routes/hr-recruitment'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MyPtoRouteImport } from './routes/my-pto'
+import { Route as MyTimecardRouteImport } from './routes/my-timecard'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TimecardLogsRouteImport } from './routes/timecard-logs'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,9 +44,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyPtoRoute = MyPtoRouteImport.update({
+  id: '/my-pto',
+  path: '/my-pto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyTimecardRoute = MyTimecardRouteImport.update({
+  id: '/my-timecard',
+  path: '/my-timecard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimecardLogsRoute = TimecardLogsRouteImport.update({
+  id: '/timecard-logs',
+  path: '/timecard-logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -53,7 +71,10 @@ export interface FileRoutesByFullPath {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/my-pto': typeof MyPtoRoute
+  '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
+  '/timecard-logs': typeof TimecardLogsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +82,10 @@ export interface FileRoutesByTo {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/my-pto': typeof MyPtoRoute
+  '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
+  '/timecard-logs': typeof TimecardLogsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +94,10 @@ export interface FileRoutesById {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/my-pto': typeof MyPtoRoute
+  '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
+  '/timecard-logs': typeof TimecardLogsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +107,10 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/my-pto'
+    | '/my-timecard'
     | '/settings'
+    | '/timecard-logs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +118,10 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/my-pto'
+    | '/my-timecard'
     | '/settings'
+    | '/timecard-logs'
   id:
     | '__root__'
     | '/'
@@ -96,7 +129,10 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/my-pto'
+    | '/my-timecard'
     | '/settings'
+    | '/timecard-logs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,7 +141,10 @@ export interface RootRouteChildren {
   EmployeesRoute: typeof EmployeesRoute
   HrRecruitmentRoute: typeof HrRecruitmentRoute
   LoginRoute: typeof LoginRoute
+  MyPtoRoute: typeof MyPtoRoute
+  MyTimecardRoute: typeof MyTimecardRoute
   SettingsRoute: typeof SettingsRoute
+  TimecardLogsRoute: typeof TimecardLogsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,11 +184,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-pto': {
+      id: '/my-pto'
+      path: '/my-pto'
+      fullPath: '/my-pto'
+      preLoaderRoute: typeof MyPtoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-timecard': {
+      id: '/my-timecard'
+      path: '/my-timecard'
+      fullPath: '/my-timecard'
+      preLoaderRoute: typeof MyTimecardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timecard-logs': {
+      id: '/timecard-logs'
+      path: '/timecard-logs'
+      fullPath: '/timecard-logs'
+      preLoaderRoute: typeof TimecardLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -161,7 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeesRoute: EmployeesRoute,
   HrRecruitmentRoute: HrRecruitmentRoute,
   LoginRoute: LoginRoute,
+  MyPtoRoute: MyPtoRoute,
+  MyTimecardRoute: MyTimecardRoute,
   SettingsRoute: SettingsRoute,
+  TimecardLogsRoute: TimecardLogsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -30,6 +30,23 @@ import {
   type WarningForm,
 } from "@/lib/hrWarningsAndCoe";
 import { getActivityLog, activityActionLabel, type HrActivityLogEntry } from "@/lib/hrActivityLog";
+import { getCompanyPtoRequests, reviewPtoRequest, type PtoRequest } from "@/lib/hrPto";
+import {
+  approveTimecardCorrection,
+  calcWorkedHours,
+  getCompanyTimecardCorrections,
+  getCompanyTimecardEntries,
+  rejectTimecardCorrection,
+  type CompanyTimeEntry,
+  type TimecardCorrection,
+} from "@/lib/hrTimecard";
+import {
+  convertToCandidate,
+  getCareerApplications,
+  getResumeUrl,
+  updateApplicationStatus,
+  type CareerApplication,
+} from "@/lib/careerApplications";
 
 export const Route = createFileRoute("/hr-recruitment")({
   component: HrRecruitment,
@@ -40,12 +57,15 @@ interface EmployeeOption {
   full_name: string;
 }
 
-type Tab = "candidates" | "onboarding" | "warnings" | "activity";
+type Tab = "candidates" | "onboarding" | "warnings" | "pto" | "attendance" | "applications" | "activity";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "candidates", label: "Candidates" },
   { key: "onboarding", label: "Onboarding Documents" },
   { key: "warnings", label: "Warnings & COE" },
+  { key: "pto", label: "PTO Requests" },
+  { key: "attendance", label: "Attendance" },
+  { key: "applications", label: "Applications" },
   { key: "activity", label: "Activity Log" },
 ];
 
@@ -85,6 +105,9 @@ function HrRecruitment() {
       {tab === "candidates" && <CandidatesTab />}
       {tab === "onboarding" && <OnboardingTab />}
       {tab === "warnings" && <WarningsCoeTab />}
+      {tab === "pto" && <PtoRequestsTab />}
+      {tab === "attendance" && <AttendanceTab />}
+      {tab === "applications" && <ApplicationsTab />}
       {tab === "activity" && <ActivityLogTab />}
     </DashboardShell>
   );
@@ -101,17 +124,31 @@ const CANDIDATE_STATUSES: CandidateStatus[] = ["applied", "interviewing", "hired
 
 function CandidatesTab() {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
+  const [pendingApplications, setPendingApplications] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function reload() {
-    setCandidates(await getCandidates());
+    const [cands, apps] = await Promise.all([getCandidates(), getCareerApplications()]);
+    setCandidates(cands);
+    setPendingApplications(apps.filter((a) => a.status === "new").length);
   }
 
   useEffect(() => {
     reload();
   }, []);
+
+  const now = new Date();
+  const openCount = candidates?.filter((c) => c.status === "applied").length ?? 0;
+  const interviewingCount = candidates?.filter((c) => c.status === "interviewing").length ?? 0;
+  const hiredThisMonthCount =
+    candidates?.filter(
+      (c) =>
+        c.status === "hired" &&
+        new Date(c.createdAt).getMonth() === now.getMonth() &&
+        new Date(c.createdAt).getFullYear() === now.getFullYear(),
+    ).length ?? 0;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -160,6 +197,13 @@ function CandidatesTab() {
 
   return (
     <div>
+      <div className="mb-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <MonitoringStatCard label="Open" value={openCount} />
+        <MonitoringStatCard label="Interviewing" value={interviewingCount} />
+        <MonitoringStatCard label="Hired This Month" value={hiredThisMonthCount} />
+        <MonitoringStatCard label="Pending Applications" value={pendingApplications ?? "…"} />
+      </div>
+
       <div className="mb-6 flex justify-end">
         <button
           type="button"
@@ -281,6 +325,15 @@ function CandidatesTab() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function MonitoringStatCard({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+      <p className="text-2xl font-bold text-[#1c2024]">{value}</p>
+      <p className="text-sm text-[var(--color-steel)]">{label}</p>
     </div>
   );
 }
@@ -720,6 +773,354 @@ function WarningsCoeTab() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── PTO Requests ─────────────────────────────────────────────────────────
+
+const PTO_STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  denied: "Denied",
+  cancelled: "Cancelled",
+};
+
+function PtoRequestsTab() {
+  const [requests, setRequests] = useState<PtoRequest[] | null>(null);
+
+  async function reload() {
+    setRequests(await getCompanyPtoRequests());
+  }
+
+  useEffect(() => {
+    reload();
+  }, []);
+
+  async function handleReview(request: PtoRequest, status: "approved" | "denied") {
+    await reviewPtoRequest(request.id, request.employeeName ?? "Unknown", status);
+    await reload();
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <tr>
+            <th className="px-6 py-3">Employee</th>
+            <th className="px-6 py-3">Type</th>
+            <th className="px-6 py-3">Dates</th>
+            <th className="px-6 py-3">Hours</th>
+            <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3" />
+          </tr>
+        </thead>
+        <tbody>
+          {requests?.map((r) => (
+            <tr key={r.id} className="border-b border-black/5 last:border-0">
+              <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{r.employeeName ?? "—"}</td>
+              <td className="px-6 py-3.5 text-[var(--color-steel)]">{r.ptoType[0].toUpperCase() + r.ptoType.slice(1)}</td>
+              <td className="px-6 py-3.5 text-[var(--color-steel)]">
+                {new Date(r.startDate).toLocaleDateString()} – {new Date(r.endDate).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-3.5 text-[var(--color-steel)]">{r.hoursRequested}</td>
+              <td className="px-6 py-3.5">
+                <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
+                  {PTO_STATUS_LABEL[r.status] ?? r.status}
+                </span>
+              </td>
+              <td className="px-6 py-3.5">
+                {r.status === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleReview(r, "approved")}
+                      className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReview(r, "denied")}
+                      className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
+                    >
+                      Deny
+                    </button>
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))}
+          {requests && requests.length === 0 && (
+            <tr>
+              <td colSpan={6} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                No PTO requests yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── Attendance ───────────────────────────────────────────────────────────
+
+function AttendanceTab() {
+  const [entries, setEntries] = useState<CompanyTimeEntry[] | null>(null);
+  const [corrections, setCorrections] = useState<TimecardCorrection[] | null>(null);
+
+  async function reload() {
+    const now = new Date();
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const end = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const [e, c] = await Promise.all([getCompanyTimecardEntries(start, end), getCompanyTimecardCorrections()]);
+    setEntries(e);
+    setCorrections(c);
+  }
+
+  useEffect(() => {
+    reload();
+  }, []);
+
+  async function handleApprove(c: TimecardCorrection) {
+    await approveTimecardCorrection(c);
+    await reload();
+  }
+
+  async function handleReject(c: TimecardCorrection) {
+    await rejectTimecardCorrection(c);
+    await reload();
+  }
+
+  return (
+    <div>
+      <h2 className="mb-4 text-lg font-bold text-[#1c2024]">This Month's Entries</h2>
+      <div className="mb-8 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <tr>
+              <th className="px-6 py-3">Employee</th>
+              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Check In</th>
+              <th className="px-6 py-3">Check Out</th>
+              <th className="px-6 py-3">Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries?.map((e) => (
+              <tr key={`${e.profileId}-${e.workDate}`} className="border-b border-black/5 last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{e.employeeName ?? "—"}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(e.workDate).toLocaleDateString()}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{e.checkIn || "—"}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{e.checkOut || "—"}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{calcWorkedHours(e).toFixed(2)}</td>
+              </tr>
+            ))}
+            {entries && entries.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                  No entries this month.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="mb-4 text-lg font-bold text-[#1c2024]">Correction Requests</h2>
+      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <tr>
+              <th className="px-6 py-3">Employee</th>
+              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Requested Change</th>
+              <th className="px-6 py-3">Reason</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {corrections?.map((c) => (
+              <tr key={c.id} className="border-b border-black/5 last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{c.employeeName ?? "—"}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(c.workDate).toLocaleDateString()}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">
+                  {c.correctedCheckIn} – {c.correctedCheckOut}
+                </td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.reason}</td>
+                <td className="px-6 py-3.5">
+                  <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
+                    {c.status[0].toUpperCase() + c.status.slice(1)}
+                  </span>
+                </td>
+                <td className="px-6 py-3.5">
+                  {c.status === "pending" && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApprove(c)}
+                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReject(c)}
+                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {corrections && corrections.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                  No correction requests yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Applications ─────────────────────────────────────────────────────────
+
+const APPLICATION_STATUS_LABEL: Record<string, string> = {
+  new: "New",
+  reviewed: "Reviewed",
+  converted: "Converted",
+  archived: "Archived",
+};
+
+function ApplicationsTab() {
+  const [applications, setApplications] = useState<CareerApplication[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+
+  async function reload() {
+    setApplications(await getCareerApplications());
+  }
+
+  useEffect(() => {
+    reload();
+  }, []);
+
+  async function handleViewResume(app: CareerApplication) {
+    const url = await getResumeUrl(app.resumePath);
+    window.open(url, "_blank");
+  }
+
+  async function handleMarkReviewed(app: CareerApplication) {
+    await updateApplicationStatus(app.id, app.name, "reviewed");
+    await reload();
+  }
+
+  async function handleArchive(app: CareerApplication) {
+    await updateApplicationStatus(app.id, app.name, "archived");
+    await reload();
+  }
+
+  async function handleConvert(app: CareerApplication) {
+    setConvertingId(app.id);
+    setError(null);
+    try {
+      await convertToCandidate(app);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to convert to candidate.");
+    } finally {
+      setConvertingId(null);
+    }
+  }
+
+  return (
+    <div>
+      <p className="mb-4 text-sm text-[var(--color-steel)]">
+        Submissions from the Hwa Lun careers page. Convert a promising applicant into a candidate to start tracking
+        them through the hiring pipeline.
+      </p>
+      {error && <p className="mb-4 text-sm font-semibold text-red-600">{error}</p>}
+      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <tr>
+              <th className="px-6 py-3">Name</th>
+              <th className="px-6 py-3">Email</th>
+              <th className="px-6 py-3">Department</th>
+              <th className="px-6 py-3">Resume</th>
+              <th className="px-6 py-3">Submitted</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {applications?.map((app) => (
+              <tr key={app.id} className="border-b border-black/5 last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{app.name}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.email}</td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.department}</td>
+                <td className="px-6 py-3.5">
+                  <button type="button" onClick={() => handleViewResume(app)} className="text-[var(--color-primary)] hover:underline">
+                    View
+                  </button>
+                </td>
+                <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(app.createdAt).toLocaleDateString()}</td>
+                <td className="px-6 py-3.5">
+                  <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
+                    {APPLICATION_STATUS_LABEL[app.status] ?? app.status}
+                  </span>
+                </td>
+                <td className="px-6 py-3.5">
+                  {app.status !== "converted" && app.status !== "archived" && (
+                    <div className="flex flex-wrap gap-2">
+                      {app.status === "new" && (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkReviewed(app)}
+                          className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                        >
+                          Mark Reviewed
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleConvert(app)}
+                        disabled={convertingId === app.id}
+                        className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-bold text-white disabled:opacity-60"
+                      >
+                        {convertingId === app.id ? "Converting…" : "Convert to Candidate"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleArchive(app)}
+                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
+                      >
+                        Archive
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {applications && applications.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-[var(--color-steel)]">
+                  No applications submitted yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

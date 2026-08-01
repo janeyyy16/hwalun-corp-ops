@@ -152,6 +152,99 @@ create policy "hr and super admin manage activity log" on hr_activity_log
   using (current_role_key() in ('super_admin', 'hr'))
   with check (current_role_key() in ('super_admin', 'hr'));
 
+-- ── Clock In/Out, Corrections, PTO ──
+-- Available to every authenticated user for their own rows (self-service);
+-- HR/Super Admin can see and manage everyone's.
+
+create table pto_requests (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references profiles(id) on delete cascade,
+  pto_type text not null check (pto_type in ('vacation', 'sick', 'personal', 'unpaid')),
+  start_date date not null,
+  end_date date not null,
+  hours_requested numeric not null,
+  reason text,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'denied', 'cancelled')),
+  reviewed_by uuid references profiles(id),
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create table timecard_entries (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references profiles(id) on delete cascade,
+  work_date date not null,
+  check_in time,
+  check_out time,
+  meal_start time,
+  meal_end time,
+  notes text,
+  unique (profile_id, work_date)
+);
+
+create table timecard_corrections (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references profiles(id) on delete cascade,
+  work_date date not null,
+  corrected_check_in time,
+  corrected_check_out time,
+  corrected_meal_start time,
+  corrected_meal_end time,
+  reason text not null,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  reviewed_by uuid references profiles(id),
+  created_at timestamptz not null default now()
+);
+
+alter table pto_requests enable row level security;
+alter table timecard_entries enable row level security;
+alter table timecard_corrections enable row level security;
+
+create policy "self or hr/super admin manage pto requests" on pto_requests
+  for all to authenticated
+  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
+  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
+
+create policy "self or hr/super admin manage timecard entries" on timecard_entries
+  for all to authenticated
+  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
+  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
+
+create policy "self or hr/super admin manage timecard corrections" on timecard_corrections
+  for all to authenticated
+  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'))
+  with check (profile_id = auth.uid() or current_role_key() in ('super_admin', 'hr'));
+
+-- ── Careers portal integration ──
+-- hwalun-corp (the public site, same Supabase project) already inserts into
+-- this table from its /careers page using the anon key, and uploads resumes
+-- into a "resumes" storage bucket. Manual step: add a SELECT policy on that
+-- existing bucket for current_role_key() in ('super_admin','hr') so HR can
+-- generate signed URLs to view submitted resumes (Storage → resumes bucket →
+-- Policies → New policy, "For full customization" template).
+
+create table career_applications (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  department text not null,
+  message text,
+  resume_path text not null,
+  status text not null default 'new' check (status in ('new', 'reviewed', 'converted', 'archived')),
+  created_at timestamptz not null default now()
+);
+
+alter table career_applications enable row level security;
+
+create policy "public can submit applications" on career_applications
+  for insert to anon
+  with check (true);
+
+create policy "hr and super admin manage applications" on career_applications
+  for all to authenticated
+  using (current_role_key() in ('super_admin', 'hr'))
+  with check (current_role_key() in ('super_admin', 'hr'));
+
 -- ── One-time bootstrap: create the first Super Admin ──
 -- 1. Supabase Dashboard → Authentication → Users → Add user
 --    Email: <your email>, Password: hwalun2026!, Auto Confirm User: yes
