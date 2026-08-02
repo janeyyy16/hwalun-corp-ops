@@ -45,6 +45,7 @@ import {
   getCareerApplications,
   getResumeUrl,
   updateApplicationStatus,
+  type ApplicationStatus,
   type CareerApplication,
 } from "@/lib/careerApplications";
 
@@ -76,7 +77,7 @@ function HrRecruitment() {
   if (!canManageEmployees) {
     return (
       <DashboardShell title="HR & Recruitment">
-        <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-line bg-surface p-8 shadow-sm">
           <p className="text-sm text-[var(--color-steel)]">You don't have access to this page.</p>
         </div>
       </DashboardShell>
@@ -94,7 +95,7 @@ function HrRecruitment() {
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === t.key
                 ? "bg-[var(--color-primary)] text-white"
-                : "bg-white text-[var(--color-steel)] hover:text-[#1c2024]"
+                : "bg-surface text-[var(--color-steel)] hover:text-ink"
             }`}
           >
             {t.label}
@@ -216,10 +217,10 @@ function CandidatesTab() {
       </div>
 
       {showForm && (
-        <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-[var(--color-primary)]" />
-            <h2 className="text-lg font-bold text-[#1c2024]">New Candidate</h2>
+            <h2 className="text-lg font-bold text-ink">New Candidate</h2>
           </div>
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
             <Field label="Full Name" name="full_name" required />
@@ -228,11 +229,11 @@ function CandidatesTab() {
             <Field label="Email" name="email" type="email" />
             <Field label="Department" name="department" />
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Notes</label>
+              <label className="mb-1.5 block text-sm font-semibold text-ink">Notes</label>
               <textarea
                 name="notes"
                 rows={3}
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             {formError && <p className="text-sm font-semibold text-red-600 sm:col-span-2">{formError}</p>}
@@ -247,9 +248,9 @@ function CandidatesTab() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Position</th>
@@ -263,15 +264,15 @@ function CandidatesTab() {
           </thead>
           <tbody>
             {candidates?.map((c) => (
-              <tr key={c.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{c.fullName}</td>
+              <tr key={c.id} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{c.fullName}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.position ?? "—"}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.email ?? c.phone ?? "—"}</td>
                 <td className="px-6 py-3.5">
                   <select
                     value={c.status}
                     onChange={(e) => handleStatusChange(c, e.target.value as CandidateStatus)}
-                    className="rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-bold text-[var(--color-primary)] outline-none"
+                    className="rounded-full border border-line-strong bg-surface px-3 py-1 text-xs font-bold text-[var(--color-primary)] outline-none"
                   >
                     {CANDIDATE_STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -292,7 +293,7 @@ function CandidatesTab() {
                         <FileText className="h-4 w-4" />
                       </button>
                     )}
-                    <label className="cursor-pointer text-[var(--color-steel)] hover:text-[#1c2024]" title="Upload CV">
+                    <label className="cursor-pointer text-[var(--color-steel)] hover:text-ink" title="Upload CV">
                       <Upload className="h-4 w-4" />
                       <input
                         type="file"
@@ -331,8 +332,8 @@ function CandidatesTab() {
 
 function MonitoringStatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-      <p className="text-2xl font-bold text-[#1c2024]">{value}</p>
+    <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+      <p className="text-2xl font-bold text-ink">{value}</p>
       <p className="text-sm text-[var(--color-steel)]">{label}</p>
     </div>
   );
@@ -351,12 +352,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">{label}</label>
+      <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
       <input
         name={name}
         type={type}
         required={required}
-        className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+        className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
       />
     </div>
   );
@@ -416,12 +417,12 @@ function OnboardingTab() {
 
   return (
     <div>
-      <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-        <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Employee</label>
+      <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm">
+        <label className="mb-1.5 block text-sm font-semibold text-ink">Employee</label>
         <select
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
-          className="w-full max-w-sm rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+          className="w-full max-w-sm rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         >
           {employees.map((emp) => (
             <option key={emp.id} value={emp.id}>
@@ -432,12 +433,12 @@ function OnboardingTab() {
 
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[200px]">
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Document Category</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Document Category</label>
             <input
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder='e.g. "Government ID", "Signed Offer Letter"'
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <label className="flex cursor-pointer items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-105">
@@ -457,9 +458,9 @@ function OnboardingTab() {
         {error && <p className="mt-2 text-sm font-semibold text-red-600">{error}</p>}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Category</th>
               <th className="px-6 py-3">File</th>
@@ -470,8 +471,8 @@ function OnboardingTab() {
           </thead>
           <tbody>
             {docs?.map((d) => (
-              <tr key={d.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{d.category}</td>
+              <tr key={d.id} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{d.category}</td>
                 <td className="px-6 py-3.5">
                   <button type="button" onClick={() => handleView(d)} className="text-[var(--color-primary)] hover:underline">
                     {d.fileName}
@@ -584,15 +585,15 @@ function WarningsCoeTab() {
 
   return (
     <div>
-      <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm print:hidden">
-        <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Employee</label>
+      <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm print:hidden">
+        <label className="mb-1.5 block text-sm font-semibold text-ink">Employee</label>
         <select
           value={selected}
           onChange={(e) => {
             setSelected(e.target.value);
             setPreview(null);
           }}
-          className="w-full max-w-sm rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+          className="w-full max-w-sm rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         >
           {employees.map((emp) => (
             <option key={emp.id} value={emp.id}>
@@ -603,26 +604,26 @@ function WarningsCoeTab() {
       </div>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2 print:hidden">
-        <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-bold text-[#1c2024]">Issue Warning</h2>
+        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-ink">Issue Warning</h2>
           <form onSubmit={handleWarningSubmit} className="space-y-4">
             <Field label="Reason" name="reason" required />
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Description</label>
+              <label className="mb-1.5 block text-sm font-semibold text-ink">Description</label>
               <textarea
                 name="description"
                 rows={4}
                 required
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Date Issued</label>
+              <label className="mb-1.5 block text-sm font-semibold text-ink">Date Issued</label>
               <input
                 name="issued_at"
                 type="date"
                 defaultValue={new Date().toISOString().slice(0, 10)}
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <button
@@ -634,25 +635,25 @@ function WarningsCoeTab() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-bold text-[#1c2024]">Generate Certificate of Employment</h2>
+        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-ink">Generate Certificate of Employment</h2>
           <form onSubmit={handleCoeSubmit} className="space-y-4">
             <Field label="Job Title" name="job_title" required />
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Start Date</label>
+              <label className="mb-1.5 block text-sm font-semibold text-ink">Start Date</label>
               <input
                 name="start_date"
                 type="date"
                 required
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Purpose</label>
+              <label className="mb-1.5 block text-sm font-semibold text-ink">Purpose</label>
               <input
                 name="purpose"
                 placeholder="e.g. Visa application, loan application"
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <button
@@ -668,9 +669,9 @@ function WarningsCoeTab() {
       {error && <p className="mb-6 text-sm font-semibold text-red-600 print:hidden">{error}</p>}
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2 print:hidden">
-        <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
               <tr>
                 <th className="px-6 py-3">Warning History</th>
                 <th className="px-6 py-3">Issued By</th>
@@ -678,9 +679,9 @@ function WarningsCoeTab() {
             </thead>
             <tbody>
               {warnings?.map((w) => (
-                <tr key={w.id} className="border-b border-black/5 last:border-0">
+                <tr key={w.id} className="border-b border-line last:border-0">
                   <td className="px-6 py-3.5">
-                    <p className="font-semibold text-[#1c2024]">{w.reason}</p>
+                    <p className="font-semibold text-ink">{w.reason}</p>
                     <p className="text-xs text-[var(--color-steel)]">{new Date(w.issuedAt).toLocaleDateString()}</p>
                   </td>
                   <td className="px-6 py-3.5 text-[var(--color-steel)]">{w.issuedByName ?? "—"}</td>
@@ -697,9 +698,9 @@ function WarningsCoeTab() {
           </table>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
               <tr>
                 <th className="px-6 py-3">COE History</th>
                 <th className="px-6 py-3">Issued By</th>
@@ -707,9 +708,9 @@ function WarningsCoeTab() {
             </thead>
             <tbody>
               {coeDocs?.map((c) => (
-                <tr key={c.id} className="border-b border-black/5 last:border-0">
+                <tr key={c.id} className="border-b border-line last:border-0">
                   <td className="px-6 py-3.5">
-                    <p className="font-semibold text-[#1c2024]">{c.jobTitle}</p>
+                    <p className="font-semibold text-ink">{c.jobTitle}</p>
                     <p className="text-xs text-[var(--color-steel)]">{new Date(c.createdAt).toLocaleDateString()}</p>
                   </td>
                   <td className="px-6 py-3.5 text-[var(--color-steel)]">{c.issuedByName ?? "—"}</td>
@@ -728,12 +729,13 @@ function WarningsCoeTab() {
       </div>
 
       {preview && (
-        <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
+        // Always white/black, never theme-aware — this represents a printed paper document.
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-[#1c2024] shadow-sm">
           <div className="mb-6 flex justify-end print:hidden">
             <button
               type="button"
               onClick={() => window.print()}
-              className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-bold text-[var(--color-steel)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-bold text-[#5b6570] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
             >
               <Printer className="h-4 w-4" />
               Print / Save as PDF
@@ -742,7 +744,7 @@ function WarningsCoeTab() {
           <div className="mx-auto max-w-2xl text-sm leading-relaxed text-[#1c2024]">
             <div className="mb-8 text-center">
               <p className="text-lg font-bold">HWA LUN CORPORATION</p>
-              <p className="text-xs text-[var(--color-steel)]">Internal operations portal</p>
+              <p className="text-xs text-[#5b6570]">Internal operations portal</p>
             </div>
             {preview.kind === "warning" ? (
               <>
@@ -803,9 +805,9 @@ function PtoRequestsTab() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+        <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
           <tr>
             <th className="px-6 py-3">Employee</th>
             <th className="px-6 py-3">Type</th>
@@ -817,8 +819,8 @@ function PtoRequestsTab() {
         </thead>
         <tbody>
           {requests?.map((r) => (
-            <tr key={r.id} className="border-b border-black/5 last:border-0">
-              <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{r.employeeName ?? "—"}</td>
+            <tr key={r.id} className="border-b border-line last:border-0">
+              <td className="px-6 py-3.5 font-semibold text-ink">{r.employeeName ?? "—"}</td>
               <td className="px-6 py-3.5 text-[var(--color-steel)]">{r.ptoType[0].toUpperCase() + r.ptoType.slice(1)}</td>
               <td className="px-6 py-3.5 text-[var(--color-steel)]">
                 {new Date(r.startDate).toLocaleDateString()} – {new Date(r.endDate).toLocaleDateString()}
@@ -835,14 +837,14 @@ function PtoRequestsTab() {
                     <button
                       type="button"
                       onClick={() => handleReview(r, "approved")}
-                      className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
+                      className="rounded-full border border-line-strong px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
                     >
                       Approve
                     </button>
                     <button
                       type="button"
                       onClick={() => handleReview(r, "denied")}
-                      className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
+                      className="rounded-full border border-line-strong px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
                     >
                       Deny
                     </button>
@@ -896,10 +898,10 @@ function AttendanceTab() {
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold text-[#1c2024]">This Month's Entries</h2>
-      <div className="mb-8 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <h2 className="mb-4 text-lg font-bold text-ink">This Month's Entries</h2>
+      <div className="mb-8 overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Employee</th>
               <th className="px-6 py-3">Date</th>
@@ -910,8 +912,8 @@ function AttendanceTab() {
           </thead>
           <tbody>
             {entries?.map((e) => (
-              <tr key={`${e.profileId}-${e.workDate}`} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{e.employeeName ?? "—"}</td>
+              <tr key={`${e.profileId}-${e.workDate}`} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{e.employeeName ?? "—"}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(e.workDate).toLocaleDateString()}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{e.checkIn || "—"}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{e.checkOut || "—"}</td>
@@ -929,10 +931,10 @@ function AttendanceTab() {
         </table>
       </div>
 
-      <h2 className="mb-4 text-lg font-bold text-[#1c2024]">Correction Requests</h2>
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <h2 className="mb-4 text-lg font-bold text-ink">Correction Requests</h2>
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Employee</th>
               <th className="px-6 py-3">Date</th>
@@ -944,8 +946,8 @@ function AttendanceTab() {
           </thead>
           <tbody>
             {corrections?.map((c) => (
-              <tr key={c.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{c.employeeName ?? "—"}</td>
+              <tr key={c.id} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{c.employeeName ?? "—"}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(c.workDate).toLocaleDateString()}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">
                   {c.correctedCheckIn} – {c.correctedCheckOut}
@@ -962,14 +964,14 @@ function AttendanceTab() {
                       <button
                         type="button"
                         onClick={() => handleApprove(c)}
-                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
+                        className="rounded-full border border-line-strong px-3 py-1 text-xs font-bold text-[var(--color-primary)] hover:border-[var(--color-primary)]"
                       >
                         Approve
                       </button>
                       <button
                         type="button"
                         onClick={() => handleReject(c)}
-                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
+                        className="rounded-full border border-line-strong px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
                       >
                         Reject
                       </button>
@@ -997,14 +999,22 @@ function AttendanceTab() {
 const APPLICATION_STATUS_LABEL: Record<string, string> = {
   new: "New",
   reviewed: "Reviewed",
-  converted: "Converted",
-  archived: "Archived",
+  converted: "Moved to Candidates",
+  rejected: "Rejected",
 };
+
+const APPLICATION_ACTIONS: { value: ApplicationStatus; label: string }[] = [
+  { value: "reviewed", label: "Reviewed" },
+  { value: "converted", label: "Move as Candidate" },
+  { value: "rejected", label: "Reject" },
+];
 
 function ApplicationsTab() {
   const [applications, setApplications] = useState<CareerApplication[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [convertingId, setConvertingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<Record<string, ApplicationStatus>>({});
+  const [preview, setPreview] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
 
   async function reload() {
     setApplications(await getCareerApplications());
@@ -1015,30 +1025,35 @@ function ApplicationsTab() {
   }, []);
 
   async function handleViewResume(app: CareerApplication) {
-    const url = await getResumeUrl(app.resumePath);
-    window.open(url, "_blank");
-  }
-
-  async function handleMarkReviewed(app: CareerApplication) {
-    await updateApplicationStatus(app.id, app.name, "reviewed");
-    await reload();
-  }
-
-  async function handleArchive(app: CareerApplication) {
-    await updateApplicationStatus(app.id, app.name, "archived");
-    await reload();
-  }
-
-  async function handleConvert(app: CareerApplication) {
-    setConvertingId(app.id);
     setError(null);
     try {
-      await convertToCandidate(app);
+      const url = await getResumeUrl(app.resumePath);
+      setPreview({ url, name: app.name, isPdf: app.resumePath.toLowerCase().endsWith(".pdf") });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load resume.");
+    }
+  }
+
+  async function handleSaveStatus(app: CareerApplication) {
+    const next = pendingStatus[app.id] ?? app.status;
+    if (next === app.status) return;
+    setSavingId(app.id);
+    setError(null);
+    try {
+      if (next === "converted") {
+        await convertToCandidate(app);
+      } else {
+        await updateApplicationStatus(app.id, app.name, next);
+      }
+      setPendingStatus((prev) => {
+        const { [app.id]: _removed, ...rest } = prev;
+        return rest;
+      });
       await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to convert to candidate.");
+      setError(err instanceof Error ? err.message : "Failed to update status.");
     } finally {
-      setConvertingId(null);
+      setSavingId(null);
     }
   }
 
@@ -1049,9 +1064,9 @@ function ApplicationsTab() {
         them through the hiring pipeline.
       </p>
       {error && <p className="mb-4 text-sm font-semibold text-red-600">{error}</p>}
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Email</th>
@@ -1059,58 +1074,57 @@ function ApplicationsTab() {
               <th className="px-6 py-3">Resume</th>
               <th className="px-6 py-3">Submitted</th>
               <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3" />
+              <th className="px-6 py-3">Action</th>
             </tr>
           </thead>
           <tbody>
-            {applications?.map((app) => (
-              <tr key={app.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{app.name}</td>
-                <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.email}</td>
-                <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.department}</td>
-                <td className="px-6 py-3.5">
-                  <button type="button" onClick={() => handleViewResume(app)} className="text-[var(--color-primary)] hover:underline">
-                    View
-                  </button>
-                </td>
-                <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(app.createdAt).toLocaleDateString()}</td>
-                <td className="px-6 py-3.5">
-                  <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
-                    {APPLICATION_STATUS_LABEL[app.status] ?? app.status}
-                  </span>
-                </td>
-                <td className="px-6 py-3.5">
-                  {app.status !== "converted" && app.status !== "archived" && (
-                    <div className="flex flex-wrap gap-2">
-                      {app.status === "new" && (
-                        <button
-                          type="button"
-                          onClick={() => handleMarkReviewed(app)}
-                          className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
-                        >
-                          Mark Reviewed
-                        </button>
-                      )}
+            {applications?.map((app) => {
+              const isActionable = APPLICATION_ACTIONS.some((a) => a.value === app.status);
+              const selected = pendingStatus[app.id] ?? (isActionable ? app.status : "reviewed");
+              return (
+                <tr key={app.id} className="border-b border-line last:border-0">
+                  <td className="px-6 py-3.5 font-semibold text-ink">{app.name}</td>
+                  <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.email}</td>
+                  <td className="px-6 py-3.5 text-[var(--color-steel)]">{app.department}</td>
+                  <td className="px-6 py-3.5">
+                    <button type="button" onClick={() => handleViewResume(app)} className="text-[var(--color-primary)] hover:underline">
+                      View
+                    </button>
+                  </td>
+                  <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(app.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-3.5">
+                    <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
+                      {APPLICATION_STATUS_LABEL[app.status] ?? app.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selected}
+                        onChange={(e) =>
+                          setPendingStatus((prev) => ({ ...prev, [app.id]: e.target.value as ApplicationStatus }))
+                        }
+                        className="rounded-full border border-line-strong bg-surface px-3 py-1 text-xs font-bold text-[var(--color-primary)] outline-none"
+                      >
+                        {APPLICATION_ACTIONS.map((a) => (
+                          <option key={a.value} value={a.value}>
+                            {a.label}
+                          </option>
+                        ))}
+                      </select>
                       <button
                         type="button"
-                        onClick={() => handleConvert(app)}
-                        disabled={convertingId === app.id}
-                        className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-bold text-white disabled:opacity-60"
+                        onClick={() => handleSaveStatus(app)}
+                        disabled={savingId === app.id || selected === app.status}
+                        className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-bold text-white disabled:opacity-40"
                       >
-                        {convertingId === app.id ? "Converting…" : "Convert to Candidate"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleArchive(app)}
-                        className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[var(--color-steel)] hover:border-red-600 hover:text-red-600"
-                      >
-                        Archive
+                        {savingId === app.id ? "Saving…" : "Save"}
                       </button>
                     </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
             {applications && applications.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-[var(--color-steel)]">
@@ -1121,6 +1135,49 @@ function ApplicationsTab() {
           </tbody>
         </table>
       </div>
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6"
+          onClick={() => setPreview(null)}
+        >
+          <div
+            className="flex h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-surface shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+              <h3 className="font-bold text-ink">{preview.name}'s Resume</h3>
+              <button
+                type="button"
+                onClick={() => setPreview(null)}
+                className="rounded-full p-1.5 text-[var(--color-steel)] hover:bg-hover hover:text-ink"
+                aria-label="Close preview"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto bg-subtle">
+              {preview.isPdf ? (
+                <iframe src={preview.url} title="Resume preview" className="h-full w-full" />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                  <p className="text-sm text-[var(--color-steel)]">
+                    This file type can't be previewed here. You can open it in a new tab instead.
+                  </p>
+                  <a
+                    href={preview.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-bold text-white shadow-sm transition-transform hover:scale-105"
+                  >
+                    Open File
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1135,9 +1192,9 @@ function ActivityLogTab() {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+        <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
           <tr>
             <th className="px-6 py-3">When</th>
             <th className="px-6 py-3">Actor</th>
@@ -1147,9 +1204,9 @@ function ActivityLogTab() {
         </thead>
         <tbody>
           {entries?.map((e) => (
-            <tr key={e.id} className="border-b border-black/5 last:border-0">
+            <tr key={e.id} className="border-b border-line last:border-0">
               <td className="px-6 py-3.5 text-[var(--color-steel)]">{new Date(e.createdAt).toLocaleString()}</td>
-              <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{e.actorName ?? "—"}</td>
+              <td className="px-6 py-3.5 font-semibold text-ink">{e.actorName ?? "—"}</td>
               <td className="px-6 py-3.5">
                 <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
                   {activityActionLabel(e.action)}

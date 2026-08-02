@@ -14,6 +14,7 @@ import { Route as AccountingFinanceRouteImport } from './routes/accounting-finan
 import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as HrRecruitmentRouteImport } from './routes/hr-recruitment'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyPtoRouteImport } from './routes/my-pto'
 import { Route as MyTimecardRouteImport } from './routes/my-timecard'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -44,6 +45,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyPtoRoute = MyPtoRouteImport.update({
   id: '/my-pto',
   path: '/my-pto',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
   '/settings': typeof SettingsRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/messages'
     | '/my-pto'
     | '/my-timecard'
     | '/settings'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/messages'
     | '/my-pto'
     | '/my-timecard'
     | '/settings'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/messages'
     | '/my-pto'
     | '/my-timecard'
     | '/settings'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   EmployeesRoute: typeof EmployeesRoute
   HrRecruitmentRoute: typeof HrRecruitmentRoute
   LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRoute
   MyPtoRoute: typeof MyPtoRoute
   MyTimecardRoute: typeof MyTimecardRoute
   SettingsRoute: typeof SettingsRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-pto': {
       id: '/my-pto'
       path: '/my-pto'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeesRoute: EmployeesRoute,
   HrRecruitmentRoute: HrRecruitmentRoute,
   LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRoute,
   MyPtoRoute: MyPtoRoute,
   MyTimecardRoute: MyTimecardRoute,
   SettingsRoute: SettingsRoute,

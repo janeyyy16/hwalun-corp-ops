@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import {
   cancelPtoRequest,
   createPtoRequest,
-  getMyProfileCreatedAt,
+  getMyProfileStartDate,
   getMyPtoRequests,
   isEligibleForPto,
   ptoDaysUsed,
@@ -24,15 +24,15 @@ const PTO_TYPES: PtoType[] = ["vacation", "sick", "personal", "unpaid"];
 
 function MyPto() {
   const { profile } = useAuth();
-  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
   const [requests, setRequests] = useState<PtoRequest[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function reload() {
     if (!profile) return;
-    const [ca, reqs] = await Promise.all([getMyProfileCreatedAt(profile.id), getMyPtoRequests(profile.id)]);
-    setCreatedAt(ca);
+    const [sd, reqs] = await Promise.all([getMyProfileStartDate(profile.id), getMyPtoRequests(profile.id)]);
+    setStartDate(sd);
     setRequests(reqs);
   }
 
@@ -42,8 +42,8 @@ function MyPto() {
 
   if (!profile) return null;
 
-  const eligible = isEligibleForPto(createdAt);
-  const window = ptoYearWindow(createdAt);
+  const eligible = isEligibleForPto(startDate);
+  const window = ptoYearWindow(startDate);
   const used = window && requests ? ptoDaysUsed(requests, window) : 0;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -84,24 +84,24 @@ function MyPto() {
           <StatCard label="Used This Year" value={`${used} days`} />
         </div>
       ) : (
-        <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm">
           <p className="text-sm text-[var(--color-steel)]">
             {eligible
               ? "PTO tracking will begin once your start date is confirmed."
-              : `You'll become eligible for PTO on ${ptoEligibleDate(createdAt) ?? "—"}.`}
+              : `You'll become eligible for PTO on ${ptoEligibleDate(startDate) ?? "—"}.`}
           </p>
         </div>
       )}
 
-      <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-bold text-[#1c2024]">New Request</h2>
+      <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-bold text-ink">New Request</h2>
         <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Type</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Type</label>
             <select
               name="pto_type"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             >
               {PTO_TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -112,29 +112,29 @@ function MyPto() {
           </div>
           <div />
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Start Date</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Start Date</label>
             <input
               name="start_date"
               type="date"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">End Date</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">End Date</label>
             <input
               name="end_date"
               type="date"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Reason</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Reason</label>
             <textarea
               name="reason"
               rows={2}
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           {error && <p className="text-sm font-semibold text-red-600 sm:col-span-2">{error}</p>}
@@ -148,9 +148,9 @@ function MyPto() {
         </form>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Type</th>
               <th className="px-6 py-3">Dates</th>
@@ -161,8 +161,8 @@ function MyPto() {
           </thead>
           <tbody>
             {requests?.map((r) => (
-              <tr key={r.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{r.ptoType[0].toUpperCase() + r.ptoType.slice(1)}</td>
+              <tr key={r.id} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{r.ptoType[0].toUpperCase() + r.ptoType.slice(1)}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">
                   {new Date(r.startDate).toLocaleDateString()} – {new Date(r.endDate).toLocaleDateString()}
                 </td>
@@ -197,8 +197,8 @@ function MyPto() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-      <p className="text-2xl font-bold text-[#1c2024]">{value}</p>
+    <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+      <p className="text-2xl font-bold text-ink">{value}</p>
       <p className="text-sm text-[var(--color-steel)]">{label}</p>
     </div>
   );

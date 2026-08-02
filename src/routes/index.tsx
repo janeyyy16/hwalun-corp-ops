@@ -55,9 +55,9 @@ function Dashboard() {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-line bg-surface p-8 shadow-sm">
           <p className="text-sm text-[var(--color-steel)]">
-            You're signed in as <strong className="text-[#1c2024]">{profile?.role.label}</strong>. More modules for
+            You're signed in as <strong className="text-ink">{profile?.role.label}</strong>. More modules for
             your role are coming soon.
           </p>
         </div>
@@ -68,11 +68,11 @@ function Dashboard() {
 
 function StatCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-primary)]/10">
         <Icon className="h-5 w-5 text-[var(--color-primary)]" />
       </div>
-      <p className="mt-4 text-2xl font-bold text-[#1c2024]">{value}</p>
+      <p className="mt-4 text-2xl font-bold text-ink">{value}</p>
       <p className="text-sm text-[var(--color-steel)]">{label}</p>
     </div>
   );

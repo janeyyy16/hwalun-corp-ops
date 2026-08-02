@@ -1,18 +1,43 @@
 @import "tailwindcss";
 
+/* Dark mode is toggled by hand (ThemeProvider adds/removes .dark on <html>),
+   not by OS preference, so the "dark:" variant tracks a class instead of the
+   prefers-color-scheme media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #c00000;
   --color-primary-dark: #8f0000;
   --color-steel: #5b6570;
   --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-ink: #1c2024;
+  --color-line: rgb(0 0 0 / 0.05);
+  --color-line-strong: rgb(0 0 0 / 0.1);
+  --color-hover: rgb(0 0 0 / 0.05);
+  --color-subtle: rgb(0 0 0 / 0.025);
   --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   --font-display: "Barlow Condensed", system-ui, sans-serif;
+}
+
+/* Reuses the brand's existing dark shades (#141618/#1c2024, already used for
+   the sidebar footer and login page) as the dark theme's base surfaces. */
+.dark {
+  --color-steel: #9aa3ad;
+  --color-bg: #141618;
+  --color-surface: #1c2024;
+  --color-ink: #f3f4f6;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+  --color-hover: rgb(255 255 255 / 0.06);
+  --color-subtle: rgb(255 255 255 / 0.03);
 }
 
 body {
   margin: 0;
   background: var(--color-bg);
-  color: #1c2024;
+  color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }

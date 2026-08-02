@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Building2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import logo from "@/assets/images/logo.png";
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -26,19 +26,12 @@ function Login() {
   }
 
   return (
+    // Fixed light-card-on-dark-backdrop brand look, intentionally not theme-aware (no toggle on this page).
     <div className="flex min-h-screen items-center justify-center bg-[#141618] px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-bold leading-tight text-[#1c2024]">HWA LUN</p>
-            <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--color-steel)]">Operations</p>
-          </div>
-        </div>
-        <h1 className="text-lg font-bold text-[#1c2024]">Sign In</h1>
-        <p className="mt-1 text-sm text-[var(--color-steel)]">Access the internal operations portal.</p>
+        <img src={logo} alt="Hwa Lun Corporation" className="mb-6 h-9 w-auto" />
+        <h1 className="font-display text-xl font-bold tracking-wide text-[#1c2024]">Sign In</h1>
+        <p className="mt-1 text-sm text-[#5b6570]">Access the internal operations portal.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -47,7 +40,7 @@ function Login() {
               name="email"
               type="email"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c2024] outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div>
@@ -56,7 +49,7 @@ function Login() {
               name="password"
               type="password"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c2024] outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           {error && <p className="text-sm font-semibold text-red-600">{error}</p>}

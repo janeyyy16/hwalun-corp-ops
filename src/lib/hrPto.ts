@@ -66,9 +66,9 @@ export function weekdayCount(startDate: string, endDate: string): number {
   return Math.max(1, count);
 }
 
-/** Employees need 1 year of tenure (from profiles.created_at) before they're eligible for PTO. */
-export function ptoEligibleDate(createdAt: string | null | undefined): string | null {
-  const base = (createdAt || "").slice(0, 10);
+/** Employees need 1 year of tenure (from profiles.start_date) before they're eligible for PTO. */
+export function ptoEligibleDate(startDate: string | null | undefined): string | null {
+  const base = (startDate || "").slice(0, 10);
   if (!base) return null;
   const d = new Date(base + "T00:00:00");
   if (Number.isNaN(d.getTime())) return null;
@@ -76,15 +76,15 @@ export function ptoEligibleDate(createdAt: string | null | undefined): string | 
   return d.toISOString().slice(0, 10);
 }
 
-export function isEligibleForPto(createdAt: string | null | undefined): boolean {
-  const eligibleDate = ptoEligibleDate(createdAt);
+export function isEligibleForPto(startDate: string | null | undefined): boolean {
+  const eligibleDate = ptoEligibleDate(startDate);
   if (!eligibleDate) return false;
   return new Date().toISOString().slice(0, 10) >= eligibleDate;
 }
 
-/** Annual PTO allowance by tenure year: year 1 = 5 days, +1 day per following year, uncapped. `unpaid` doesn't draw against this. */
+/** Flat 3-day PTO allowance per tenure year once eligible. `unpaid` doesn't draw against this. */
 export function ptoAllowanceForTenureYear(tenureYear: number): number {
-  return tenureYear < 1 ? 0 : 4 + tenureYear;
+  return tenureYear < 1 ? 0 : 3;
 }
 
 function fullYearsElapsed(from: Date, to: Date): number {
@@ -102,12 +102,12 @@ export interface PtoYearWindow {
   allowance: number;
 }
 
-/** Which PTO tenure-year `onDate` falls in, anchored to the employee's hire anniversary (profiles.created_at). */
+/** Which PTO tenure-year `onDate` falls in, anchored to the employee's hire anniversary (profiles.start_date). */
 export function ptoYearWindow(
-  createdAt: string | null | undefined,
+  startDate: string | null | undefined,
   onDate: string = new Date().toISOString().slice(0, 10),
 ): PtoYearWindow | null {
-  const base = (createdAt || "").slice(0, 10);
+  const base = (startDate || "").slice(0, 10);
   if (!base) return null;
   const hire = new Date(base + "T00:00:00");
   const target = new Date(onDate + "T00:00:00");
@@ -146,10 +146,10 @@ export function ptoDaysUsed(
     .reduce((sum, r) => sum + r.hoursRequested / 8, 0);
 }
 
-export async function getMyProfileCreatedAt(profileId: string): Promise<string | null> {
-  const { data, error } = await supabase.from("profiles").select("created_at").eq("id", profileId).single();
+export async function getMyProfileStartDate(profileId: string): Promise<string | null> {
+  const { data, error } = await supabase.from("profiles").select("start_date").eq("id", profileId).single();
   if (error) throw new Error(error.message);
-  return data?.created_at ?? null;
+  return data?.start_date ?? null;
 }
 
 export async function getMyPtoRequests(profileId: string): Promise<PtoRequest[]> {

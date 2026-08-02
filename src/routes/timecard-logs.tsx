@@ -54,16 +54,16 @@ function TimecardLogs() {
 
   return (
     <DashboardShell title="Timecard Logs" subtitle="A calendar view of your recorded check-ins and check-outs.">
-      <div className="mb-6 max-w-3xl rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
+      <div className="mb-6 max-w-3xl rounded-2xl border border-line bg-surface p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-bold text-[#1c2024]">
+          <h2 className="text-base font-bold text-ink">
             {MONTH_NAMES[viewMonth]} {viewYear}
           </h2>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => goToMonth(-1)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-steel)] hover:bg-black/5 hover:text-[#1c2024]"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-steel)] hover:bg-hover hover:text-ink"
               aria-label="Previous month"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -71,7 +71,7 @@ function TimecardLogs() {
             <button
               type="button"
               onClick={() => goToMonth(1)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-steel)] hover:bg-black/5 hover:text-[#1c2024]"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-steel)] hover:bg-hover hover:text-ink"
               aria-label="Next month"
             >
               <ChevronRight className="h-4 w-4" />
@@ -103,10 +103,10 @@ function TimecardLogs() {
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                     : isToday
                       ? "border-[var(--color-primary)]/40"
-                      : "border-black/5 hover:border-black/15"
+                      : "border-line hover:border-line-strong"
                 }`}
               >
-                <p className={`text-[11px] font-bold ${isToday ? "text-[var(--color-primary)]" : "text-[#1c2024]"}`}>{day}</p>
+                <p className={`text-[11px] font-bold ${isToday ? "text-[var(--color-primary)]" : "text-ink"}`}>{day}</p>
                 {entry?.checkIn && (
                   <p className="truncate text-[9px] font-semibold leading-tight text-green-700">In {entry.checkIn.slice(0, 5)}</p>
                 )}
@@ -131,9 +131,9 @@ function TimecardLogs() {
       </div>
 
       {selectedDay && (
-        <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+            <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
               <tr>
                 <th className="px-6 py-3">Date</th>
                 <th className="px-6 py-3">Check In</th>
@@ -145,7 +145,7 @@ function TimecardLogs() {
             </thead>
             <tbody>
               <tr>
-                <td className="px-6 py-2.5 font-semibold text-[#1c2024]">{new Date(selectedDay).toLocaleDateString()}</td>
+                <td className="px-6 py-2.5 font-semibold text-ink">{new Date(selectedDay).toLocaleDateString()}</td>
                 <td className="px-6 py-2.5 text-[var(--color-steel)]">{selectedEntry?.checkIn || "—"}</td>
                 <td className="px-6 py-2.5 text-[var(--color-steel)]">{selectedEntry?.checkOut || "—"}</td>
                 <td className="px-6 py-2.5 text-[var(--color-steel)]">{selectedEntry?.mealStart || "—"}</td>

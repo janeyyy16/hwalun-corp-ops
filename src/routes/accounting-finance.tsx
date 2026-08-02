@@ -8,9 +8,9 @@ export const Route = createFileRoute("/accounting-finance")({
 function AccountingFinance() {
   return (
     <DashboardShell title="Accounting and Finance" subtitle="Track budgets, expenses, and financial reports.">
-      <div className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-line bg-surface p-8 shadow-sm">
         <p className="text-sm text-[var(--color-steel)]">
-          The <strong className="text-[#1c2024]">Accounting and Finance</strong> module is coming soon.
+          The <strong className="text-ink">Accounting and Finance</strong> module is coming soon.
         </p>
       </div>
     </DashboardShell>

@@ -77,9 +77,9 @@ function MyTimecard() {
 
   return (
     <DashboardShell title="My Timecard" subtitle="Punch in from the header — this page shows your recorded time and lets you request corrections.">
-      <div className="mb-6 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Date</th>
               <th className="px-6 py-3">Check In</th>
@@ -93,8 +93,8 @@ function MyTimecard() {
             {days.map((day) => {
               const entry = entries[day] ?? EMPTY_ENTRY;
               return (
-                <tr key={day} className="border-b border-black/5 last:border-0">
-                  <td className="px-6 py-2.5 font-semibold text-[#1c2024]">{new Date(day).toLocaleDateString()}</td>
+                <tr key={day} className="border-b border-line last:border-0">
+                  <td className="px-6 py-2.5 font-semibold text-ink">{new Date(day).toLocaleDateString()}</td>
                   <td className="px-6 py-2.5 text-[var(--color-steel)]">{entry.checkIn || "—"}</td>
                   <td className="px-6 py-2.5 text-[var(--color-steel)]">{entry.checkOut || "—"}</td>
                   <td className="px-6 py-2.5 text-[var(--color-steel)]">{entry.mealStart || "—"}</td>
@@ -107,61 +107,61 @@ function MyTimecard() {
         </table>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-bold text-[#1c2024]">Request a Correction</h2>
+      <div className="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-bold text-ink">Request a Correction</h2>
         <form onSubmit={handleCorrectionSubmit} className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Date</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Date</label>
             <input
               name="work_date"
               type="date"
               required
               max={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div />
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Corrected Check In</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Corrected Check In</label>
             <input
               name="check_in"
               type="time"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Corrected Check Out</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Corrected Check Out</label>
             <input
               name="check_out"
               type="time"
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Meal Start</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Meal Start</label>
             <input
               name="meal_start"
               type="time"
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Meal End</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Meal End</label>
             <input
               name="meal_end"
               type="time"
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-sm font-semibold text-[#1c2024]">Reason</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">Reason</label>
             <textarea
               name="reason"
               rows={2}
               required
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </div>
           {error && <p className="text-sm font-semibold text-red-600 sm:col-span-2">{error}</p>}
@@ -174,9 +174,9 @@ function MyTimecard() {
         </form>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 bg-black/[0.02] text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
+          <thead className="border-b border-line bg-subtle text-xs font-bold uppercase tracking-wide text-[var(--color-steel)]">
             <tr>
               <th className="px-6 py-3">Date</th>
               <th className="px-6 py-3">Requested Change</th>
@@ -186,8 +186,8 @@ function MyTimecard() {
           </thead>
           <tbody>
             {corrections?.map((c) => (
-              <tr key={c.id} className="border-b border-black/5 last:border-0">
-                <td className="px-6 py-3.5 font-semibold text-[#1c2024]">{new Date(c.workDate).toLocaleDateString()}</td>
+              <tr key={c.id} className="border-b border-line last:border-0">
+                <td className="px-6 py-3.5 font-semibold text-ink">{new Date(c.workDate).toLocaleDateString()}</td>
                 <td className="px-6 py-3.5 text-[var(--color-steel)]">
                   {c.correctedCheckIn} – {c.correctedCheckOut}
                 </td>

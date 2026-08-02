@@ -51,7 +51,7 @@ export function TimeClockButtons() {
   const stampClass = "pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold";
 
   return (
-    <div className="flex h-9 items-center gap-1 rounded-full border border-black/10 bg-black/[0.02] px-1">
+    <div className="flex h-9 items-center gap-1 rounded-full border border-line-strong bg-subtle px-1">
       <div className="relative">
         <button
           type="button"

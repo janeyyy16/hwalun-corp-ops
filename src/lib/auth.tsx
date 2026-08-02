@@ -8,6 +8,14 @@ export interface Profile {
   id: string;
   full_name: string;
   email: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  address: string | null;
+  start_date: string | null;
+  date_of_birth: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
   role: { key: RoleKey; label: string };
 }
 
@@ -16,18 +24,19 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   canManageEmployees: boolean;
+  canManageUsers: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const PROFILE_SELECT =
+  "id, full_name, email, first_name, last_name, phone, address, start_date, date_of_birth, emergency_contact_name, emergency_contact_phone, role:roles(key, label)";
+
 async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role:roles(key, label)")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("profiles").select(PROFILE_SELECT).eq("id", userId).single();
   if (error || !data) return null;
   return data as unknown as Profile;
 }
@@ -61,10 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }
 
+  async function refreshProfile() {
+    if (!session) return;
+    setProfile(await fetchProfile(session.user.id));
+  }
+
   const canManageEmployees = profile?.role.key === "super_admin" || profile?.role.key === "hr";
+  const canManageUsers = canManageEmployees || profile?.role.key === "admin";
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, canManageEmployees, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, profile, loading, canManageEmployees, canManageUsers, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

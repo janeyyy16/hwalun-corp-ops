@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/hrActivityLog";
 import { addCandidate } from "@/lib/hrCandidates";
 
-export type ApplicationStatus = "new" | "reviewed" | "converted" | "archived";
+export type ApplicationStatus = "new" | "reviewed" | "converted" | "rejected";
 
 export interface CareerApplication {
   id: string;

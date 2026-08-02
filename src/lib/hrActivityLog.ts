@@ -35,6 +35,8 @@ const ACTIVITY_ACTION_LABELS: Record<string, string> = {
   timecard_correction_rejected: "Rejected timecard correction",
   application_status_changed: "Updated application status",
   application_converted_to_candidate: "Converted application to candidate",
+  employee_added: "Added user",
+  employee_profile_updated: "Updated employee profile",
 };
 
 export function activityActionLabel(action: string): string {
