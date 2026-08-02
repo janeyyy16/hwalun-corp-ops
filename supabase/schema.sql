@@ -599,6 +599,249 @@ begin
   end if;
 end $$;
 
+-- ── Accounting & Finance module ──
+-- Budgets/expenses/payroll are restricted to super_admin + accounting_finance.
+-- Pay rates and other employees' timecard hours are sensitive, so instead of
+-- widening the broad profiles/timecard_entries policies (which would also
+-- hand accounting_finance phone/address/DOB/emergency-contact access it has
+-- no reason to need), we expose only what payroll requires through a
+-- security-definer function, same pattern as list_profile_names() above.
+
+alter table profiles add column if not exists hourly_rate numeric(10,2);
+
+create or replace function list_employee_pay_info()
+returns table (id uuid, full_name text, hourly_rate numeric)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select p.id, p.full_name, p.hourly_rate
+  from profiles p
+  where current_role_key() in ('super_admin', 'accounting_finance')
+  order by p.full_name
+$$;
+
+create or replace function update_employee_pay_rate(p_profile_id uuid, p_hourly_rate numeric)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if current_role_key() not in ('super_admin', 'accounting_finance') then
+    raise exception 'Not authorized to edit pay rates.';
+  end if;
+  update profiles set hourly_rate = p_hourly_rate where id = p_profile_id;
+end;
+$$;
+
+-- Read-only add-ons so the payroll employee-detail view can show timecard
+-- history, PTO, and warnings alongside pay — purely additive to the
+-- existing HR-only policies, accounting_finance still can't write any of
+-- these (approvals/corrections stay HR's job).
+drop policy if exists "accounting can read timecard entries" on timecard_entries;
+create policy "accounting can read timecard entries" on timecard_entries
+  for select to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'));
+
+drop policy if exists "accounting can read pto requests" on pto_requests;
+create policy "accounting can read pto requests" on pto_requests
+  for select to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'));
+
+drop policy if exists "accounting can read warning forms" on hr_warning_forms;
+create policy "accounting can read warning forms" on hr_warning_forms
+  for select to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'));
+
+create table if not exists budgets (
+  id uuid primary key default gen_random_uuid(),
+  category text not null,
+  period text not null, -- 'YYYY-MM'
+  amount numeric(12,2) not null,
+  notes text,
+  created_by uuid references profiles(id),
+  created_at timestamptz not null default now(),
+  unique (category, period)
+);
+
+create table if not exists expenses (
+  id uuid primary key default gen_random_uuid(),
+  category text not null,
+  description text not null,
+  amount numeric(12,2) not null,
+  expense_date date not null,
+  receipt_path text,
+  created_by uuid references profiles(id),
+  created_at timestamptz not null default now()
+);
+alter table expenses add column if not exists receipt_path text;
+
+create table if not exists payroll_runs (
+  id uuid primary key default gen_random_uuid(),
+  period_start date not null,
+  period_end date not null,
+  created_by uuid references profiles(id),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists payroll_run_lines (
+  id uuid primary key default gen_random_uuid(),
+  payroll_run_id uuid not null references payroll_runs(id) on delete cascade,
+  profile_id uuid references profiles(id) on delete set null,
+  employee_name text not null,
+  regular_hours numeric(8,2) not null default 0,
+  overtime_hours numeric(8,2) not null default 0,
+  hourly_rate numeric(10,2) not null default 0,
+  gross_pay numeric(12,2) not null default 0
+);
+
+-- Display currency is fixed to PHP in the app, not user-selectable, so no
+-- settings table is needed. Drops the one from an earlier version of this
+-- module in case this file already ran against this database.
+drop table if exists finance_settings;
+
+alter table budgets enable row level security;
+alter table expenses enable row level security;
+alter table payroll_runs enable row level security;
+alter table payroll_run_lines enable row level security;
+
+drop policy if exists "accounting and super admin manage budgets" on budgets;
+create policy "accounting and super admin manage budgets" on budgets
+  for all to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'))
+  with check (current_role_key() in ('super_admin', 'accounting_finance'));
+
+drop policy if exists "accounting and super admin manage expenses" on expenses;
+create policy "accounting and super admin manage expenses" on expenses
+  for all to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'))
+  with check (current_role_key() in ('super_admin', 'accounting_finance'));
+
+drop policy if exists "accounting and super admin manage payroll runs" on payroll_runs;
+create policy "accounting and super admin manage payroll runs" on payroll_runs
+  for all to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'))
+  with check (current_role_key() in ('super_admin', 'accounting_finance'));
+
+drop policy if exists "accounting and super admin manage payroll run lines" on payroll_run_lines;
+create policy "accounting and super admin manage payroll run lines" on payroll_run_lines
+  for all to authenticated
+  using (current_role_key() in ('super_admin', 'accounting_finance'))
+  with check (current_role_key() in ('super_admin', 'accounting_finance'));
+
+insert into storage.buckets (id, name, public)
+values ('expense-receipts', 'expense-receipts', false)
+on conflict (id) do nothing;
+
+drop policy if exists "accounting and super admin manage expense receipts" on storage.objects;
+create policy "accounting and super admin manage expense receipts" on storage.objects
+  for all to authenticated
+  using (bucket_id = 'expense-receipts' and current_role_key() in ('super_admin', 'accounting_finance'))
+  with check (bucket_id = 'expense-receipts' and current_role_key() in ('super_admin', 'accounting_finance'));
+
+-- ── Meeting Calendar ──
+-- Only admin/super_admin can schedule meetings. Invitees (specific people
+-- and/or everyone in one or more roles) are resolved to concrete
+-- meeting_participants rows at creation time, same approach as the
+-- #announcement channel's membership — a later role change doesn't
+-- retroactively add/remove someone from a meeting already scheduled.
+
+create table if not exists meetings (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  location text,
+  meeting_date date not null,
+  start_time time not null,
+  end_time time,
+  created_by uuid references profiles(id),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists meeting_participants (
+  meeting_id uuid not null references meetings(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
+  read_at timestamptz,
+  primary key (meeting_id, profile_id)
+);
+
+create or replace function is_meeting_participant(p_meeting_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from meeting_participants
+    where meeting_id = p_meeting_id and profile_id = auth.uid()
+  )
+$$;
+
+alter table meetings enable row level security;
+alter table meeting_participants enable row level security;
+
+drop policy if exists "participants and schedulers can read meetings" on meetings;
+create policy "participants and schedulers can read meetings" on meetings
+  for select to authenticated
+  using (is_meeting_participant(id) or current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "admin and super admin schedule meetings" on meetings;
+create policy "admin and super admin schedule meetings" on meetings
+  for insert to authenticated
+  with check (created_by = auth.uid() and current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "admin and super admin update meetings" on meetings;
+create policy "admin and super admin update meetings" on meetings
+  for update to authenticated
+  using (current_role_key() in ('super_admin', 'admin'))
+  with check (current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "admin and super admin delete meetings" on meetings;
+create policy "admin and super admin delete meetings" on meetings
+  for delete to authenticated
+  using (current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "participants and schedulers can read meeting participants" on meeting_participants;
+create policy "participants and schedulers can read meeting participants" on meeting_participants
+  for select to authenticated
+  using (profile_id = auth.uid() or current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "admin and super admin add meeting participants" on meeting_participants;
+create policy "admin and super admin add meeting participants" on meeting_participants
+  for insert to authenticated
+  with check (current_role_key() in ('super_admin', 'admin'));
+
+drop policy if exists "participants can mark their invite read" on meeting_participants;
+create policy "participants can mark their invite read" on meeting_participants
+  for update to authenticated
+  using (profile_id = auth.uid())
+  with check (profile_id = auth.uid());
+
+drop policy if exists "admin and super admin remove meeting participants" on meeting_participants;
+create policy "admin and super admin remove meeting participants" on meeting_participants
+  for delete to authenticated
+  using (current_role_key() in ('super_admin', 'admin'));
+
+-- Live meeting invites (Notifications bell) and calendar updates.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'meetings'
+  ) then
+    alter publication supabase_realtime add table meetings;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'meeting_participants'
+  ) then
+    alter publication supabase_realtime add table meeting_participants;
+  end if;
+end $$;
+
 -- ── One-time bootstrap: create the first Super Admin ──
 -- 1. Supabase Dashboard → Authentication → Users → Add user
 --    Email: <your email>, Password: hwalun2026!, Auto Confirm User: yes

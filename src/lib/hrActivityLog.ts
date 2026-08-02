@@ -37,6 +37,15 @@ const ACTIVITY_ACTION_LABELS: Record<string, string> = {
   application_converted_to_candidate: "Converted application to candidate",
   employee_added: "Added user",
   employee_profile_updated: "Updated employee profile",
+  budget_added: "Added budget",
+  budget_deleted: "Deleted budget",
+  expense_added: "Logged expense",
+  expense_receipt_uploaded: "Uploaded expense receipt",
+  expense_deleted: "Deleted expense",
+  payroll_run_generated: "Generated payroll run",
+  employee_pay_rate_updated: "Updated employee pay rate",
+  meeting_scheduled: "Scheduled meeting",
+  meeting_cancelled: "Cancelled meeting",
 };
 
 export function activityActionLabel(action: string): string {

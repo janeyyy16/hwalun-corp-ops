@@ -1,8 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  Bell,
   Briefcase,
   Calendar,
+  CalendarClock,
   CalendarDays,
   ChevronDown,
   Clock,
@@ -20,7 +20,7 @@ import { useAuth, type RoleKey } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { TimeClockButtons } from "@/components/TimeClockButtons";
 import { ProfileMenu } from "@/components/ProfileMenu";
-import { HeaderIconMenu } from "@/components/HeaderIconMenu";
+import { NotificationsMenu } from "@/components/NotificationsMenu";
 import { hasUnreadMessages, subscribeToNewMessages } from "@/lib/messaging";
 import logo from "@/assets/images/logo.png";
 import logoIcon from "@/assets/images/logo-icon.png";
@@ -53,6 +53,7 @@ const NAV: NavItem[] = [
   { to: "/my-timecard", label: "My Timecard", icon: Clock, roles: null },
   { to: "/timecard-logs", label: "Timecard Logs", icon: Calendar, roles: null },
   { to: "/my-pto", label: "My PTO", icon: CalendarDays, roles: null },
+  { to: "/meeting-calendar", label: "Meeting Calendar", icon: CalendarClock, roles: null },
   { to: "/settings", label: "Profile Settings", icon: SettingsIcon, roles: null },
 ];
 
@@ -184,7 +185,7 @@ export function DashboardShell({ children, title, subtitle }: { children: ReactN
               <MessageSquare className="h-5 w-5" />
               {unreadMessages && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[var(--color-primary)]" />}
             </Link>
-            <HeaderIconMenu icon={Bell} label="Notifications" emptyText="No new notifications." />
+            <NotificationsMenu />
             <button
               type="button"
               onClick={toggleTheme}

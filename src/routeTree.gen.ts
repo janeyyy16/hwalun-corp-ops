@@ -14,6 +14,7 @@ import { Route as AccountingFinanceRouteImport } from './routes/accounting-finan
 import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as HrRecruitmentRouteImport } from './routes/hr-recruitment'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MeetingCalendarRouteImport } from './routes/meeting-calendar'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyPtoRouteImport } from './routes/my-pto'
 import { Route as MyTimecardRouteImport } from './routes/my-timecard'
@@ -43,6 +44,11 @@ const HrRecruitmentRoute = HrRecruitmentRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingCalendarRoute = MeetingCalendarRouteImport.update({
+  id: '/meeting-calendar',
+  path: '/meeting-calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesRoute = MessagesRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/meeting-calendar': typeof MeetingCalendarRoute
   '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/meeting-calendar': typeof MeetingCalendarRoute
   '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/employees': typeof EmployeesRoute
   '/hr-recruitment': typeof HrRecruitmentRoute
   '/login': typeof LoginRoute
+  '/meeting-calendar': typeof MeetingCalendarRoute
   '/messages': typeof MessagesRoute
   '/my-pto': typeof MyPtoRoute
   '/my-timecard': typeof MyTimecardRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/meeting-calendar'
     | '/messages'
     | '/my-pto'
     | '/my-timecard'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/meeting-calendar'
     | '/messages'
     | '/my-pto'
     | '/my-timecard'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/hr-recruitment'
     | '/login'
+    | '/meeting-calendar'
     | '/messages'
     | '/my-pto'
     | '/my-timecard'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   EmployeesRoute: typeof EmployeesRoute
   HrRecruitmentRoute: typeof HrRecruitmentRoute
   LoginRoute: typeof LoginRoute
+  MeetingCalendarRoute: typeof MeetingCalendarRoute
   MessagesRoute: typeof MessagesRoute
   MyPtoRoute: typeof MyPtoRoute
   MyTimecardRoute: typeof MyTimecardRoute
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meeting-calendar': {
+      id: '/meeting-calendar'
+      path: '/meeting-calendar'
+      fullPath: '/meeting-calendar'
+      preLoaderRoute: typeof MeetingCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/messages': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeesRoute: EmployeesRoute,
   HrRecruitmentRoute: HrRecruitmentRoute,
   LoginRoute: LoginRoute,
+  MeetingCalendarRoute: MeetingCalendarRoute,
   MessagesRoute: MessagesRoute,
   MyPtoRoute: MyPtoRoute,
   MyTimecardRoute: MyTimecardRoute,

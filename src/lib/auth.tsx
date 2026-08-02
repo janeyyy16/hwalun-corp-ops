@@ -25,6 +25,7 @@ interface AuthContextValue {
   loading: boolean;
   canManageEmployees: boolean;
   canManageUsers: boolean;
+  canManageFinance: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -77,9 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const canManageEmployees = profile?.role.key === "super_admin" || profile?.role.key === "hr";
   const canManageUsers = canManageEmployees || profile?.role.key === "admin";
+  const canManageFinance = profile?.role.key === "super_admin" || profile?.role.key === "accounting_finance";
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, canManageEmployees, canManageUsers, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{ session, profile, loading, canManageEmployees, canManageUsers, canManageFinance, signIn, signOut, refreshProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
