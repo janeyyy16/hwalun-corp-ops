@@ -69,18 +69,13 @@ export async function saveEntry(profileId: string, workDate: string, entry: Time
   if (error) throw new Error(error.message);
 }
 
-export async function getMonthEntries(profileId: string, year: number, month: number): Promise<Record<string, TimeEntry>> {
-  const mm = String(month + 1).padStart(2, "0");
-  const start = `${year}-${mm}-01`;
-  const lastDay = new Date(year, month + 1, 0).getDate();
-  const end = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
-
+export async function getEntriesInRange(profileId: string, startDate: string, endDate: string): Promise<Record<string, TimeEntry>> {
   const { data, error } = await supabase
     .from("timecard_entries")
     .select("work_date, check_in, check_out, meal_start, meal_end, notes")
     .eq("profile_id", profileId)
-    .gte("work_date", start)
-    .lte("work_date", end);
+    .gte("work_date", startDate)
+    .lte("work_date", endDate);
   if (error) throw new Error(error.message);
 
   const map: Record<string, TimeEntry> = {};
@@ -94,6 +89,14 @@ export async function getMonthEntries(profileId: string, year: number, month: nu
     };
   }
   return map;
+}
+
+export async function getMonthEntries(profileId: string, year: number, month: number): Promise<Record<string, TimeEntry>> {
+  const mm = String(month + 1).padStart(2, "0");
+  const start = `${year}-${mm}-01`;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const end = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
+  return getEntriesInRange(profileId, start, end);
 }
 
 export interface CompanyTimeEntry extends TimeEntry {
